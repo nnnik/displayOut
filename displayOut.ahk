@@ -132,6 +132,51 @@ class display
 		This.minPix := pix
 	}
 	
+	/*
+		method getCoordinateFromPixel
+		description:	Returns a position on the field that corresponds to a pixel that was provided as input
+		
+		syntax:		pos := newDisplay.getCoordinateFromPixel( pixel, z )
+		
+		pixel:		a 2 dimensional array like [x, y] in pixel
+		note: the function will always use client mode of the displays target hWND for every calculation
+		
+		z:			the z part of the resulting position, defaults to 1
+		
+		pos:			a 3 dimensional array like [x, y, z] on the field, z will be set to 1 per default
+	*/
+	
+	getCoordinateFromPixel( pixel, z := 1 )
+	{
+		fieldSize := This.getFieldSize()
+		targeSize := This.getTargetSize()
+		return [ pixel.1 / targeSize.1 * fieldSize.1 + 0.5, pixel.2 / targeSize.2 * fieldSize.2 + 0.5, 1 ]
+	}
+	
+	
+	/*
+		method getPictureFromCoordinate
+		description:	Tries to find a picture that matches with the corresponding position
+		A picture matches a position when the position is on the picture
+		
+		syntax:		picture := newDisplay.getPictureFromCoordinate( pos )
+		
+		pos:			a 3 dimendional array like [x, y, z] on the field
+		
+		picture:		the resulting picture that has been found or 0 if nothing was found
+		
+	*/
+	
+	getPictureFromCoordinate( coordinate )
+	{
+		zLayer  := This.getZLayer( coordinate.3 )
+		visPics := zLayer.getVisiblePictures()
+		for each, picture in visPics
+			if picture.matchCoordinate( coordinate )
+				return new directReference( picture )
+		return false
+	}
+	
 	setTarget( hWND )
 	{
 		This.targetHWND := hWND
@@ -336,6 +381,19 @@ class display
 			description:	Methods used to make the pictures work internally
 			Proceed with caution
 		*/
+		
+		matchCoordinate( searchCoordinate )
+		{
+			static deg2rad := atan( 1 )/45 ;to convert degrees to radians
+			pos    := This.getPosition()
+			if !( pos.3 == searchCoordinate.3 )
+				return false
+			sCoord := [ searchCoordinate.1 - pos.1 , searchCoordinate.2 - pos.2 ]
+			rot    := ( 360 - mod( This.getRotation().1, 360 ) ) * deg2rad
+			sCoord := [ sCoord.1 * cos( rot ) - sCoord.2 * sin( rot ), sCoord.1 * sin( rot ) + sCoord.2 * cos( rot ) ]
+			size   := This.getSize()
+			return ( abs( sCoord.1 ) <= size.1/2 && abs( sCoord.2 ) <= size.2/2 )
+		}
 		
 		joinZLayer()
 		{
