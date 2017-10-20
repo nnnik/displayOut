@@ -150,7 +150,7 @@ class display
 	{
 		fieldSize := This.getFieldSize()
 		targeSize := This.getTargetSize()
-		return [ pixel.1 / targeSize.1 * fieldSize.1 + 0.5, pixel.2 / targeSize.2 * fieldSize.2 + 0.5, 1 ]
+		return [ pixel.1 / targeSize.1 * fieldSize.1 + 0.5, pixel.2 / targeSize.2 * fieldSize.2 + 0.5, z ]
 	}
 	
 	
